@@ -8,21 +8,17 @@ import SwiftUI
 
 struct CocktailView: View {
     @StateObject private var viewModel = CocktailViewModel()
-    @State private var searchQuery: String = ""
 
     var body: some View {
         NavigationStack {
             VStack {
                 HStack {
-                    TextField("Search for a cocktail...", text: $searchQuery)
+                    // Привязываем напрямую к published свойству
+                    TextField("Search for a cocktail...", text: $viewModel.searchQuery)
                         .textFieldStyle(.roundedBorder)
+                        .padding()
+                    // Без отдельной кнопку поиска
 
-                    Button {
-                        viewModel.search(for: searchQuery)
-                    } label: {
-                        Image(systemName: "magnifyingglass")
-                    }
-                    .padding(.leading, 4)
                 }
                 .padding()
 

@@ -10,40 +10,20 @@ import Foundation
 final class CocktailImageService {
     private let base = "https://www.thecocktaildb.com/api/json/v1/1/search.php"
 
-    func fetchThumbnail(
-        for cocktailName: String,
-        completion: @escaping (URL?) -> Void
-    ) {
-        guard !cocktailName.isEmpty else { return completion(nil) }
-        guard var comp = URLComponents(string: base) else {
-            return completion(nil)
+    func fetchThumbnail(for cocktailName: String) async -> URL? {
+        guard !cocktailName.isEmpty,
+              var comp = URLComponents(string: base) else { return nil }
+        
+        comp.queryItems = [.init(name: "s", value: cocktailName)]
+        guard let url = comp.url else { return nil }
+        
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            let parsed = try JSONDecoder().decode(CocktailDBResponse.self, from: data)
+            return parsed.drinks?.first?.imageURL
+        } catch {
+            print("Error fetching thumbnail: \(error)")
+            return nil
         }
-        comp.queryItems = [ .init(name: "s", value: cocktailName) ]
-        guard let url = comp.url else {
-            return completion(nil)
-        }
-
-        let task = URLSession.shared.dataTask(with: url) { data, _, _ in
-            guard
-              let d = data,
-              let parsed = try? JSONDecoder().decode(CocktailDBResponse.self, from: d),
-              let thumb = parsed.drinks.first?.imageURL
-            else {
-                DispatchQueue.main.async { completion(nil) }
-                return
-            }
-            DispatchQueue.main.async { completion(thumb) }
-        }
-        task.resume()
-    }
-}
-
-// вспомогательные структуры:
-struct CocktailDBResponse: Codable {
-    let drinks: [Drink]
-    struct Drink: Codable {
-        let strDrink: String
-        let strDrinkThumb: URL
-        var imageURL: URL? { strDrinkThumb }
     }
 }
