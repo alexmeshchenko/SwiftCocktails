@@ -32,12 +32,12 @@ A SwiftUI-based mobile app that lets you discover, search, and save cocktail rec
 1. Clone the repository:
 Clone the repository via SSH:
 ```bash
-   git clone git@github.com:alexmeshchenko/PocketBartender.git
+   git clone git@github.com:alexmeshchenko/SwiftCocktails.git
 ```
 
 2. Open the project in Xcode:
 ```bash
-   open PocketBartender.xcodeproj
+   open SwiftCocktails.xcodeproj
 ```
 
 3. Add your API key:
