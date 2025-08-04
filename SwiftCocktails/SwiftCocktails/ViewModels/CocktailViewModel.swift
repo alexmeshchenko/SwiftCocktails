@@ -11,14 +11,14 @@ import Combine
 @MainActor
 class CocktailViewModel: ObservableObject {
     @Published var searchQuery = ""
-    private var cancellables = Set<AnyCancellable>()
-    
     @Published var cocktails: [Cocktail] = []
     @Published var errorMessage: String?
     @Published var isLoading = false
     
     private let imageService = CocktailImageService()
     private var searchTask: Task<Void, Never>?
+    private var cancellables = Set<AnyCancellable>()
+    private var lastSearchQuery: String = ""  // Сохраняем последний запрос
     
     init() {
         // Debounce поиска
@@ -31,7 +31,16 @@ class CocktailViewModel: ObservableObject {
             .store(in: &cancellables)
     }
     
+    // Добавляем метод retry
+    func retry() {
+        // Повторяем последний поиск
+        search(for: lastSearchQuery)
+    }
+    
     func search(for query: String) {
+        // Сохраняем запрос для retry
+        lastSearchQuery = query
+        
         // Отменяем предыдущий поиск
         searchTask?.cancel()
         
