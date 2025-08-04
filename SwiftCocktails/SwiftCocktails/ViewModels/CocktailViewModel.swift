@@ -21,23 +21,44 @@ class CocktailViewModel: ObservableObject {
     private var lastSearchQuery: String = ""  // Сохраняем последний запрос
     
     init() {
-        // Debounce поиска
+        // Debounce поиска // Подписываемся на изменения searchQuery
         $searchQuery
             .debounce(for: .milliseconds(500), scheduler: RunLoop.main)
             .removeDuplicates()
             .sink { [weak self] query in
-                self?.search(for: query)
+                if query.isEmpty {
+                    // Очищаем результаты при пустом запросе
+                    self?.clearResults()
+                } else {
+                    // Ищем только если есть текст
+                    self?.search(for: query)
+                }
             }
             .store(in: &cancellables)
     }
     
+    private func clearResults() {
+        searchTask?.cancel()
+        cocktails = []
+        errorMessage = nil
+        isLoading = false
+        lastSearchQuery = ""
+    }
+    
     // Добавляем метод retry
     func retry() {
-        // Повторяем последний поиск
+        // Повторяем только если был предыдущий поиск
+        guard !lastSearchQuery.isEmpty else { return }
         search(for: lastSearchQuery)
     }
     
     func search(for query: String) {
+        // Дополнительная проверка на всякий случай
+        guard !query.isEmpty else {
+            clearResults()
+            return
+        }
+
         // Сохраняем запрос для retry
         lastSearchQuery = query
         

@@ -11,7 +11,7 @@ struct CocktailView: View {
     
     var body: some View {
         NavigationStack {
-            VStack {
+            VStack(spacing: 0) {
                 // Search bar
                 // Привязываем напрямую к published свойству
                 TextField("Search for a cocktail...", text: $viewModel.searchQuery)
@@ -32,10 +32,21 @@ struct CocktailView: View {
                     Spacer()
                 } else if viewModel.cocktails.isEmpty {
                     Spacer()
-                    EmptyStateView(
-                        title: "No cocktails found",
-                        subtitle: "Try searching for something else"
-                    )
+                    if viewModel.searchQuery.isEmpty {
+                        // Начальное состояние
+                        EmptyStateView(
+                            title: "Search for cocktails",
+                            subtitle: "Type a name to find your favorite drink",
+                            systemImage: "magnifyingglass"
+                        )
+                    } else {
+                        // Нет результатов
+                        EmptyStateView(
+                            title: "No cocktails found",
+                            subtitle: "Try searching for something else",
+                            systemImage: "wineglass"
+                        )
+                    }
                     Spacer()
                 } else {
                     CocktailListView(cocktails: viewModel.cocktails)
