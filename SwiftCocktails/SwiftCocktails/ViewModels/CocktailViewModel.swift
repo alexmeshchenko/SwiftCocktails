@@ -6,11 +6,11 @@
 //
 
 import Foundation
-
-final class CocktailViewModel: ObservableObject {
+@MainActor
+class CocktailViewModel: ObservableObject {
     @Published var cocktails: [Cocktail] = []
     @Published var errorMessage: String?
-    @Published var isLoading: Bool = false
+    @Published var isLoading = false
 
     func search(for query: String) {
         isLoading = true
@@ -23,15 +23,24 @@ final class CocktailViewModel: ObservableObject {
 
             switch result {
             case .success(let list):
-                print("✅ Loaded cocktails: \(list.map(\.name))")
-                self.cocktails = list
-                if list.isEmpty {
-                    self.errorMessage = "No cocktails found."
-                }
+                Task { await self.augment(list: list) }
             case .failure(let error):
-                print("❌ Error: \(error)")
                 self.errorMessage = error.localizedDescription
             }
         }
+    }
+
+    private func augment(list: [Cocktail]) async {
+        var new = [Cocktail]()
+        for var c in list {
+            await withCheckedContinuation { cont in
+                CocktailImageService().fetchThumbnail(for: c.name) { url in
+                    c = Cocktail(name: c.name, ingredients: c.ingredients, instructions: c.instructions, imageURL: url)
+                    new.append(c)
+                    cont.resume()
+                }
+            }
+        }
+        cocktails = new
     }
 }

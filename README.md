@@ -1,4 +1,7 @@
 # SwiftCocktails
+
+![Quotoday Banner](Banner.jpeg)
+
 A SwiftUI-based mobile app that lets you discover, search, and save cocktail recipes using the [API Ninjas Cocktail API](https://api-ninjas.com/api/cocktail). Find drinks by name, explore random cocktails, or browse collections by ingredients like Vodka, Rum, and Gin.
 
 ---
@@ -61,7 +64,7 @@ Use this format:
 
 5. Add this line to your .gitignore:
 ```bash
-Secrets.plist
+Config.plist
 ```
 
 ---

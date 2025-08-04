@@ -9,12 +9,10 @@ import Foundation
 
 // MARK: - Cocktail Model
 struct Cocktail: Identifiable, Codable, Equatable {
-    var id: String { name } // имя уникально в API
+    var id: String { name.lowercased() }
+
     let name: String
     let ingredients: [String]
-    
-    enum CodingKeys: String, CodingKey {
-        case name
-        case ingredients
-    }
+    let instructions: String
+    let imageURL: URL?
 }
