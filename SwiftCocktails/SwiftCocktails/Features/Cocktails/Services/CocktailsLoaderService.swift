@@ -10,7 +10,6 @@ import Foundation
 final class CocktailsLoaderService {
     static let shared: CocktailsLoaderService? = try? CocktailsLoaderService()
 
-    private let baseURL = "https://api.api-ninjas.com/v1/cocktail"
     private let apiKey: String
     private let session: URLSession
 
@@ -29,7 +28,7 @@ final class CocktailsLoaderService {
     // MARK: - Public API
 
         func fetchCocktails(matching query: String?, completion: @escaping (Result<[Cocktail], Error>) -> Void) {
-            guard var components = URLComponents(string: baseURL) else {
+            guard var components = URLComponents(string: Constants.API.baseURL) else {
                 completion(.failure(ServiceError.invalidURL))
                 return
             }
@@ -93,7 +92,7 @@ final class CocktailsLoaderService {
 
 extension CocktailsLoaderService {
     func fetchCocktailsAsync(matching query: String?) async throws -> [Cocktail] {
-        guard var components = URLComponents(string: baseURL) else {
+        guard var components = URLComponents(string: Constants.API.baseURL) else {
             throw ServiceError.invalidURL
         }
         
