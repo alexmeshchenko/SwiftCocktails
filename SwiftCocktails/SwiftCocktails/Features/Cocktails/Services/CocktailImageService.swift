@@ -10,7 +10,7 @@ import Foundation
 final class CocktailImageService {
     func fetchThumbnail(for cocktailName: String) async -> URL? {
         guard !cocktailName.isEmpty,
-              var comp = URLComponents(string: Constants.API.imageBaseURL) else { return nil }
+              var comp = URLComponents(string: Constants.Network.imagesBaseURL) else { return nil }
         
         comp.queryItems = [.init(name: "s", value: cocktailName)]
         guard let url = comp.url else { return nil }

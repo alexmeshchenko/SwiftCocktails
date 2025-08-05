@@ -23,7 +23,7 @@ class CocktailViewModel: ObservableObject {
     init() {
         // Debounce поиска // Подписываемся на изменения searchQuery
         $searchQuery
-            .debounce(for: .milliseconds(Constants.UI.searchDebounce), scheduler: RunLoop.main)
+            .debounce(for: .milliseconds(Constants.Search.debounceInterval), scheduler: RunLoop.main)
             .removeDuplicates()
             .sink { [weak self] query in
                 if query.isEmpty {

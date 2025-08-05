@@ -9,90 +9,100 @@ import Foundation
 
 final class CocktailsLoaderService {
     static let shared: CocktailsLoaderService? = try? CocktailsLoaderService()
-
+    
     private let apiKey: String
     private let session: URLSession
-
+    
     private init() throws {
         // Загружаем API ключ
         self.apiKey = try ConfigReader.value(for: "API_NINJAS_KEY")
-
+        
         // Настраиваем URLSession
         let sessionConfig = URLSessionConfiguration.default  // Переименовали в sessionConfig
         sessionConfig.timeoutIntervalForRequest = 20
         sessionConfig.timeoutIntervalForResource = 20
         self.session = URLSession(configuration: sessionConfig)
     }
-
     
     // MARK: - Public API
-
-        func fetchCocktails(matching query: String?, completion: @escaping (Result<[Cocktail], Error>) -> Void) {
-            guard var components = URLComponents(string: Constants.API.baseURL) else {
-                completion(.failure(ServiceError.invalidURL))
-                return
-            }
-
-            if let query = query, !query.isEmpty {
-                components.queryItems = [URLQueryItem(name: "name", value: query)]
-            }
-
-            guard let url = components.url else {
-                completion(.failure(ServiceError.invalidURL))
-                return
-            }
-
-            var request = URLRequest(url: url)
-            request.setValue(apiKey, forHTTPHeaderField: "X-Api-Key")
-            request.httpMethod = "GET"
-
-            let task = session.dataTask(with: request) { data, response, error in
-                if let error = error {
-                    DispatchQueue.main.async {
-                        completion(.failure(error))
-                    }
-                    return
-                }
-
-                guard let data = data else {
-                    DispatchQueue.main.async {
-                        completion(.failure(ServiceError.emptyData))
-                    }
-                    return
-                }
-
-                do {
-                    let cocktails = try JSONDecoder().decode([Cocktail].self, from: data)
-                    DispatchQueue.main.async {
-                        completion(.success(cocktails))
-                    }
-                } catch {
-                    DispatchQueue.main.async {
-                        completion(.failure(error))
-                    }
-                }
-            }
-
-            task.resume()
+    
+    func fetchCocktails(matching query: String?, completion: @escaping (Result<[Cocktail], Error>) -> Void) {
+        guard var components = URLComponents(string: Constants.Network.cocktailsBaseURL) else {
+            completion(.failure(ServiceError.invalidURL))
+            return
         }
-
-        // MARK: - Error Handling
-        enum ServiceError: Error, LocalizedError {
-            case invalidURL
-            case emptyData
-
-            var errorDescription: String? {
-                switch self {
-                case .invalidURL: return "Invalid URL"
-                case .emptyData: return "No data received from server"
+        
+        if let query = query, !query.isEmpty {
+            components.queryItems = [URLQueryItem(name: "name", value: query)]
+        }
+        
+        guard let url = components.url else {
+            completion(.failure(ServiceError.invalidURL))
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.setValue(apiKey, forHTTPHeaderField: "X-Api-Key")
+        request.httpMethod = "GET"
+        
+        let task = session.dataTask(with: request) { data, response, error in
+            if let error = error {
+                DispatchQueue.main.async {
+                    completion(.failure(error))
                 }
+                return
+            }
+            
+            // Проверяем HTTP статус код
+            if let httpResponse = response as? HTTPURLResponse,
+               !(200...299).contains(httpResponse.statusCode) {
+                DispatchQueue.main.async {
+                    completion(.failure(ServiceError.invalidResponse(statusCode: httpResponse.statusCode)))
+                }
+                return
+            }
+            
+            guard let data = data else {
+                DispatchQueue.main.async {
+                    completion(.failure(ServiceError.emptyData))
+                }
+                return
+            }
+            
+            do {
+                let cocktails = try JSONDecoder().decode([Cocktail].self, from: data)
+                DispatchQueue.main.async {
+                    completion(.success(cocktails))
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    completion(.failure(error))
+                }
+            }
+        }
+        
+        task.resume()
+    }
+    
+    // MARK: - Error Handling
+    enum ServiceError: Error, LocalizedError {
+        case invalidURL
+        case emptyData
+        case invalidResponse(statusCode: Int)
+        
+        var errorDescription: String? {
+            switch self {
+            case .invalidURL: return "Invalid URL"
+            case .emptyData: return "No data received from server"
+            case .invalidResponse(let statusCode): return "Invalid response with status code \(statusCode)"
             }
         }
     }
+}
 
 extension CocktailsLoaderService {
     func fetchCocktailsAsync(matching query: String?) async throws -> [Cocktail] {
-        guard var components = URLComponents(string: Constants.API.baseURL) else {
+        guard var components = URLComponents(string: Constants.Network.cocktailsBaseURL) else {
             throw ServiceError.invalidURL
         }
         

@@ -5,7 +5,6 @@
 //  Created by Aleksandr Meshchenko on 04.08.25.
 //
 
-
 import SwiftUI
 struct CocktailDetailView: View {
     let cocktail: Cocktail
