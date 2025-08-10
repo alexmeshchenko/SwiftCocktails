@@ -10,11 +10,13 @@ import SwiftUI
 @main
 struct SwiftCocktailsApp: App {
     @StateObject private var favoritesStore = FavoritesStore()
+    @StateObject private var cocktailCache = CocktailCache.shared
     
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .environmentObject(favoritesStore)
+                .environmentObject(cocktailCache)
         }
     }
 }

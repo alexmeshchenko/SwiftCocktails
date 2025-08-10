@@ -20,6 +20,8 @@ class CocktailViewModel: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     private var lastSearchQuery: String = ""  // Сохраняем последний запрос
     
+    private let cache = CocktailCache.shared
+    
     init() {
         // Debounce поиска // Подписываемся на изменения searchQuery
         $searchQuery
@@ -58,7 +60,7 @@ class CocktailViewModel: ObservableObject {
             clearResults()
             return
         }
-
+        
         // Сохраняем запрос для retry
         lastSearchQuery = query
         
@@ -87,6 +89,9 @@ class CocktailViewModel: ObservableObject {
                 guard !Task.isCancelled else { return }
                 
                 self.cocktails = augmented
+                
+                // Добавляем в кеш
+                cache.add(augmented)
             } catch {
                 guard !Task.isCancelled else { return }
                 self.errorMessage = error.localizedDescription
@@ -100,9 +105,9 @@ class CocktailViewModel: ObservableObject {
         await withTaskGroup(of: Cocktail.self) { group in
             for cocktail in list {
                 group.addTask { // без weak self
-//                    TaskGroup автоматически ждет завершения всех задач
-//                    Нет долгоживущей ссылки на замыкание (нет замыкания, которое может пережить объект)
-//                    Метод augment завершится только после выполнения всех задач
+                    //                    TaskGroup автоматически ждет завершения всех задач
+                    //                    Нет долгоживущей ссылки на замыкание (нет замыкания, которое может пережить объект)
+                    //                    Метод augment завершится только после выполнения всех задач
                     let imageURL = await self.imageService.fetchThumbnail(for: cocktail.name)
                     
                     return Cocktail(

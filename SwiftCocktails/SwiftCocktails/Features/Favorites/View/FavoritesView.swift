@@ -9,14 +9,33 @@ import SwiftUI
 
 struct FavoritesView: View {
     @EnvironmentObject var favoritesStore: FavoritesStore
-    @StateObject private var viewModel = CocktailViewModel()
-    @State private var favoriteCocktails: [Cocktail] = []
+    private let cache = CocktailCache.shared
+    
+    var favoriteCocktails: [Cocktail] {
+        cache.getMultiple(favoritesStore.favoriteIDs)
+    }
     
     var body: some View {
         NavigationStack {
             Group {
-                if favoriteCocktails.isEmpty {
-                    // Пустое состояние
+                if favoriteCocktails.isEmpty && !favoritesStore.favoriteIDs.isEmpty {
+                    // Есть избранные, но они не в кеше
+                    VStack(spacing: 20) {
+                        Image(systemName: "arrow.clockwise")
+                            .font(.system(size: 50))
+                            .foregroundColor(.secondary)
+                        
+                        Text("Your favorites will appear here")
+                            .font(.headline)
+                        
+                        Text("Search for cocktails first to see them in favorites")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                    }
+                    .padding()
+                } else if favoriteCocktails.isEmpty {
+                    // Нет избранных
                     VStack(spacing: 20) {
                         Spacer()
                         
@@ -42,20 +61,6 @@ struct FavoritesView: View {
                 }
             }
             .navigationTitle("Favorites")
-            .onAppear {
-                loadFavorites()
-            }
-            .onChange(of: favoritesStore.favoriteIDs) {
-                loadFavorites()
-            }
-        }
-    }
-    
-    private func loadFavorites() {
-        // Пока просто фильтруем из загруженных коктейлей
-        // В будущем можно загружать только избранные
-        favoriteCocktails = viewModel.cocktails.filter { cocktail in
-            favoritesStore.isFavorite(cocktail)
         }
     }
 }

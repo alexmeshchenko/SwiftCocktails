@@ -10,6 +10,7 @@ import SwiftUI
 struct CocktailListView: View {
     let cocktails: [Cocktail]
     var onRefresh: (() -> Void)?
+    @EnvironmentObject var favoritesStore: FavoritesStore
     
     var body: some View {
         List(cocktails) { cocktail in
