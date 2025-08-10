@@ -1,5 +1,5 @@
 //
-//  CocktailView.swift
+//  CocktailView.swift 
 //  SwiftCocktails
 //
 //  Created by Aleksandr Meshchenko on 04.08.25.
@@ -11,14 +11,7 @@ struct CocktailView: View {
     
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
-                // Search bar
-                // Привязываем напрямую к published свойству
-                TextField("Search for a cocktail...", text: $viewModel.searchQuery)
-                    .textFieldStyle(.roundedBorder)
-                    .padding()
-                // Без отдельной кнопку поиска
-                
+            VStack(spacing: 0) {                
                 // Content
                 if viewModel.isLoading {
                     Spacer()
@@ -53,6 +46,11 @@ struct CocktailView: View {
                 }
             }
             .navigationTitle("🍹 Cocktails")
+            .searchable(
+                            text: $viewModel.searchQuery,
+                            placement: .navigationBarDrawer(displayMode: .always),
+                            prompt: "Search for a cocktail..."
+                        )
         }
     }
 }
