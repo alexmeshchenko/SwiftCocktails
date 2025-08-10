@@ -9,6 +9,7 @@ import SwiftUI
 
 struct CocktailRowView: View {
     let cocktail: Cocktail
+    @EnvironmentObject var favoritesStore: FavoritesStore
     
     var body: some View {
         HStack(spacing: 12) {
@@ -38,6 +39,15 @@ struct CocktailRowView: View {
             }
             
             Spacer()
+            
+            // Кнопка избранного
+            Button {
+                favoritesStore.toggle(cocktail)
+            } label: {
+                Image(systemName: favoritesStore.isFavorite(cocktail) ? "heart.fill" : "heart")
+                    .foregroundColor(favoritesStore.isFavorite(cocktail) ? .red : .gray)
+            }
+            .buttonStyle(.plain)
         }
         .padding(.vertical, 4)
     }
